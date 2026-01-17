@@ -1,38 +1,59 @@
-import { useParams } from "react-router-dom"
+import { useParams } from "react-router-dom";
 import { useState } from "react";
-import { IThumbnail } from "../assets/assets";
+import type { IThumbnail } from "../assets/assets";
 import SoftBackdrop from "../components/SoftBackdrop";
 
-
 const Generate = () => {
-    const {id} = useParams();
-    const [title, setTitle] = useState('')
-    const [additionalDetails, setAdditionalDetails] = useState('')
+  const { id } = useParams<{ id?: string }>();
 
-    const [thumbnail, setThumbnail] = useState<IThumbnail | null>(null)
-    const [loading, setLoading] = useState(false)
+  const [title, setTitle] = useState<string>("");
+  const [additionalDetails, setAdditionalDetails] = useState<string>("");
+  const [thumbnail, setThumbnail] = useState<IThumbnail | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-    return (
+  return (
     <>
-    <SoftBackdrop />
-    <div className="pt-24 min-h-screen">
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 lg:pb-8">
-            <div className="grid lg:grid-cols-[400px_1fr] gap-8">
-                {/* LEFT PANEL */}
-                <div className={`space-y-6 ${id && 'pointer-events-none'}`}>
-                    <div className="p-6 rounded-2xl bg-white/8 border border-white/12 shadow-xl space-y-6">
-                    <div>
-                        <h2>Create Your Thumbnail</h2>
-                    </div>
-                    </div>
-                </div>
-                {/* RIGHT PANEL */}
-                <div></div>
-            </div>
-        </main>
-    </div>
-    </>
-    )
-}
+      <SoftBackdrop />
 
-export default Generate
+      <div className="pt-24 min-h-screen">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 lg:pb-8">
+          <div className="grid lg:grid-cols-[400px_1fr] gap-8">
+            
+            {/* LEFT PANEL */}
+            <div className={`space-y-6 ${id ? "pointer-events-none" : ""}`}>
+              <div className="p-6 rounded-2xl bg-white/10 border border-white/20 shadow-xl space-y-4">
+                <div>
+                  <h2 className="text-xl font-bold text-zinc-100 mb-1">
+                    Create Your Thumbnail
+                  </h2>
+                  <p className="text-sm text-zinc-400">
+                    Describe your vision and let AI bring it to life
+                  </p>
+                </div>
+                <div className="space-y-5">
+                  {/* TITLE INPUT */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium">Title or Topoc</label>
+                    <input type="text" value={title} onChange={(e)=>setTitle(e.target.value)} maxLength={100} placeholder="e.g., 10 Tips for Better Sleep" className="w-full px-4 py-3 rounded-lg border border-white/12 bg-black/20 text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-pink-500" />
+                  </div>
+                </div>
+                {/* BUTTON */}
+                {!id && (
+                    <button className="text-[15px] w-full py-3.5 rounded-xl font-medium bg-gradient-to-b from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 transition-colors disabled:cursor-not-allowed">
+                        {loading ? 'Generating...' : 'Generate Thumbnail '}
+                    </button>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT PANEL */}
+            <div className="rounded-2xl border border-white/20 bg-white/5"></div>
+
+          </div>
+        </main>
+      </div>
+    </>
+  );
+};
+
+export default Generate;
