@@ -8,9 +8,9 @@ const AspectRatioSelector = ({ value, onChange }: {
 }) => {
 
     const iconMap = {
-        '16:9': <RectangleHorizontal className="size-6" />,
-        '1:1': <Square className="size-6" />,
-        '9:16': <RectangleVertical className="size-6" />,
+        "16:9": <RectangleHorizontal className="size-6" />,
+        "1:1": <Square className="size-6" />,
+        "9:16": <RectangleVertical className="size-6" />,
     } as Record<AspectRatio, React.ReactNode>;
 
     return (
@@ -18,7 +18,8 @@ const AspectRatioSelector = ({ value, onChange }: {
             <label className="block text-sm font-sm font-medium text-zinc-200">
                 Aspect Ratio
             </label>
-            <div className="flex flex-wrap gap-2">
+
+            <div className="flex gap-2">
                 {aspectRatios.map((ratio) => {
                     const selected = value === ratio;
 
@@ -27,7 +28,12 @@ const AspectRatioSelector = ({ value, onChange }: {
                             key={ratio}
                             type="button"
                             onClick={() => onChange(ratio)}
-                            className={`flex items-center gap-2 rounded-md border border-white/10 ${selected ? 'bg-white/10' : 'hover:bg-white/6'}`}>
+                            className={`flex items-center justify-center gap-2
+                                w-24 h-11
+                                rounded-md border border-white/10
+                                ${selected ? "bg-white/10" : "hover:bg-white/6"}
+                            `}
+                        >
                             {iconMap[ratio]}
                             <span className="tracking-widest">{ratio}</span>
                         </button>

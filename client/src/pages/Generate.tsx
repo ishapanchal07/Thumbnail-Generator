@@ -1,7 +1,8 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
-import type { IThumbnail } from "../assets/assets";
+import { colorSchemes, type AspectRatio, type IThumbnail, type ThumbnailStyle } from "../assets/assets";
 import SoftBackdrop from "../components/SoftBackdrop";
+import AspectRatioSelector from "../components/AspectRatioSelector";
 
 const Generate = () => {
   const { id } = useParams<{ id?: string }>();
@@ -9,7 +10,14 @@ const Generate = () => {
   const [title, setTitle] = useState<string>("");
   const [additionalDetails, setAdditionalDetails] = useState<string>("");
   const [thumbnail, setThumbnail] = useState<IThumbnail | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false)
+
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9')
+  const [colorScheme, setColorSchemeId] = useState<string>(colorSchemes[0].id)
+  const [style, setStyle] = useState<ThumbnailStyle>('Blod & Graphic')
+
+
+  const [styleDroupdownOpen, setDroupdowanOpen] = useState(false)
 
   return (
     <>
@@ -40,6 +48,7 @@ const Generate = () => {
                     </div>
                   </div>
                   {/* AspectRatioSelector */}
+                  <AspectRatioSelector value={aspectRatio} onChange={setAspectRatio}/>
                   {/* StyleSelector */}
                   {/* ColorSchemeSelector */}
 
