@@ -9,6 +9,7 @@ import {
 import SoftBackdrop from "../components/SoftBackdrop";
 import AspectRatioSelector from "../components/AspectRatioSelector";
 import StyleSelector from "../components/StyleSelector";
+import ColorSchemeSelector from "../components/ColorSchemeSelector";
 
 const Generate = () => {
   const { id } = useParams<{ id?: string }>();
@@ -80,7 +81,11 @@ const Generate = () => {
                     setIsOpen={setStyleDropdownOpen}
                   />
 
-                  {/* ColorSchemeSelector */}
+                  {/* Color Scheme Selector */}
+                  <ColorSchemeSelector
+                    value={colorScheme}
+                    onChange={setColorSchemeId}
+                  />
 
                   {/* DETAILS */}
                   <div className="space-y-2">
