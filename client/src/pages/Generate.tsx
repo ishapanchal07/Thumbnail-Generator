@@ -1,7 +1,8 @@
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   colorSchemes,
+  dummyThumbnails,
   type AspectRatio,
   type IThumbnail,
   type ThumbnailStyle,
@@ -10,22 +11,49 @@ import SoftBackdrop from "../components/SoftBackdrop";
 import AspectRatioSelector from "../components/AspectRatioSelector";
 import StyleSelector from "../components/StyleSelector";
 import ColorSchemeSelector from "../components/ColorSchemeSelector";
+import PreviewPanel from "../components/PreviewPanel";
 
 const Generate = () => {
-  const { id } = useParams<{ id?: string }>();
+  const { id } = useParams<{ id?: string }>()
 
-  const [title, setTitle] = useState<string>("");
-  const [additionalDetails, setAdditionalDetails] = useState<string>("");
-  const [thumbnail, setThumbnail] = useState<IThumbnail | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState<string>("")
+  const [additionalDetails, setAdditionalDetails] = useState<string>("")
+  const [thumbnail, setThumbnail] = useState<IThumbnail | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9")
   const [colorScheme, setColorSchemeId] = useState<string>(
     colorSchemes[0].id
-  );
-  const [style, setStyle] = useState<ThumbnailStyle>("Bold & Graphic");
+  )
+  const [style, setStyle] = useState<ThumbnailStyle>("Bold & Graphic")
 
-  const [styleDropdownOpen, setStyleDropdownOpen] = useState(false);
+  const [styleDropdownOpen, setStyleDropdownOpen] = useState(false)
+
+  const handleGenerate = async () => {
+
+  }
+
+  const fetchThumbnail = async () => {
+    setLoading(true)
+    if(id){
+      const thumbnail : any = dummyThumbnails.find((thumbnail)=> thumbnail._id === id);
+      setThumbnail(thumbnail)
+      setAdditionalDetails(thumbnail.user_prompt)
+      setTitle(thumbnail.title)
+      setColorSchemeId(thumbnail.colorScheme)
+      setAspectRatio(thumbnail.aspect_ratio)
+      setStyle(thumbnail.style)
+      setLoading(false)
+    }
+  }
+
+  useEffect(()=>{
+    if(id){
+      fetchThumbnail()
+    }
+  }, [id])
+
+
 
   return (
     <>
@@ -109,7 +137,7 @@ const Generate = () => {
 
                 {/* BUTTON */}
                 {!id && (
-                  <button className="text-[15px] w-full py-3.5 rounded-xl font-medium bg-gradient-to-b from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 transition-colors disabled:cursor-not-allowed">
+                  <button onClick={handleGenerate} className="text-[15px] w-full py-3.5 rounded-xl font-medium bg-gradient-to-b from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 transition-colors disabled:cursor-not-allowed">
                     {loading ? "Generating..." : "Generate Thumbnail"}
                   </button>
                 )}
@@ -117,7 +145,12 @@ const Generate = () => {
             </div>
 
             {/* RIGHT PANEL */}
-            <div className="rounded-2xl border border-white/20 bg-white/5"></div>
+            <div>
+              <div className="p-6 rounded-2xl bg-white/8 border border-white/10 shadow-xl">
+                <h2 className="text-lg font-semibold text-zinc-100 mb-4">Preview</h2>
+                <PreviewPanel thumbnail={thumbnail} isLoading={loading} aspectRatio={aspectRatio}/>
+              </div>
+            </div>
           </div>
         </main>
       </div>
