@@ -1,9 +1,9 @@
-import { useState } from "react"
-import SoftBackdrop from "../components/SoftBackdrop"
+import { useState } from "react";
+import SoftBackdrop from "../components/SoftBackdrop";
 
 const MyGeneration = () => {
+  const [thumbnails, setThumbnail] = useState([]);
 
-    const [thumbnails, setThumbnail] = useState
   return (
     <>
       <SoftBackdrop />
@@ -20,7 +20,7 @@ const MyGeneration = () => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default MyGeneration
+export default MyGeneration;
