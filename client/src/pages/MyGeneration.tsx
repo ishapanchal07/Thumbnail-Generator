@@ -1,8 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SoftBackdrop from "../components/SoftBackdrop";
+import { dummyThumbnails, type IThumbnail } from "../assets/assets";
+import { useNavigate } from "react-router-dom";
 
 const MyGeneration = () => {
-  const [thumbnails, setThumbnail] = useState([]);
+
+  const navigate = useNavigate()
+
+  const aspectRatioClassMap : Record<string, string> = {
+    '16:9': 'aspect-video',
+    '1:1' : 'aspect-square',
+    '9:16' : 'aspect-[9/16]',
+  }
+
+
+  const [thumbnails, setThumbnail] = useState<IThumbnail[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const fetchThumnails = async () =>{
+    setThumbnail(dummyThumbnails as unknown as IThumbnail[])
+    setLoading(false)
+  }
+
+  const handleDelete = async (id: string)=>{
+    console.log(id)
+  }
+
+  const handleDowanload = (image_url: string)=>{
+    window.open(image_url, '_blank')
+  }
+
+
+
+  useEffect(()=>{
+    fetchThumnails()
+  },[])
+
 
   return (
     <>
@@ -18,6 +51,42 @@ const MyGeneration = () => {
             View and manage all your AI-generated thumbnails
           </p>
         </div>
+
+        {/* loading */}
+        {loading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({length: 6}).map((_, i)=>(
+            <div key={i} className="rounded-2xl bg-white/6 border border-white/10 animate-pulse h-[260px]" />
+          ))}</div>
+        )}
+
+        {/* EMPTY STATE */}
+        {!loading && thumbnails.length === 0 && (
+          <div className="text-center py-24">
+            <h3 className="text-lg font-semibold text-zinc-200">No thumbnails yet</h3>
+            <p className="text-sm text-zinc-400 mt-2">Generate  your first thumbnail to see it here</p>
+          </div>
+        )}
+
+        {/* GRID */}
+        {!loading && thumbnails.length > 0 && ( 
+          <div className="columns-1 sm:columns-2 lg:columns-3 2xl:columns-4 gap-8">
+            {thumbnails.map((thumb: IThumbnail)=>{
+              const aspectClass=aspectRatioClassMap[thumb.aspect_ratio || '16:9'];
+
+              return (
+                <div key={thumb._id} onClick={()=> navigate(`/generete/${thumb._id}`)} className="mb-8 group relative cursor-pionter rounded-2xl bg-white/6 border border-white/10 transition shadow-xl break-inside-avoid">
+                  {/* IMAGE */}
+                  <div className={`relative overflow-hidden rounded-t-2xl ${aspectClass} bg-black`}>
+                    {thumb.image_url ? (
+                      <img src={thumb.image_url} alt={thumb.title} className="w-full h-full object "/>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </>
   );
