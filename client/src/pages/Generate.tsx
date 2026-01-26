@@ -1,8 +1,7 @@
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   colorSchemes,
-  dummyThumbnails,
   type AspectRatio,
   type IThumbnail,
   type ThumbnailStyle,
@@ -12,48 +11,85 @@ import AspectRatioSelector from "../components/AspectRatioSelector";
 import StyleSelector from "../components/StyleSelector";
 import ColorSchemeSelector from "../components/ColorSchemeSelector";
 import PreviewPanel from "../components/PreviewPanel";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
+import api from "../configs/api";
 
 const Generate = () => {
-  const { id } = useParams<{ id?: string }>()
+  const { id } = useParams<{ id?: string }>();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
 
-  const [title, setTitle] = useState<string>("")
-  const [additionalDetails, setAdditionalDetails] = useState<string>("")
-  const [thumbnail, setThumbnail] = useState<IThumbnail | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [title, setTitle] = useState<string>("");
+  const [additionalDetails, setAdditionalDetails] = useState<string>("");
+  const [thumbnail, setThumbnail] = useState<IThumbnail | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9")
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
   const [colorScheme, setColorSchemeId] = useState<string>(
     colorSchemes[0].id
-  )
-  const [style, setStyle] = useState<ThumbnailStyle>("Bold & Graphic")
+  );
+  const [style, setStyle] = useState<ThumbnailStyle>("Bold & Graphic");
 
-  const [styleDropdownOpen, setStyleDropdownOpen] = useState(false)
+  const [styleDropdownOpen, setStyleDropdownOpen] = useState(false);
 
   const handleGenerate = async () => {
+    if (!isLoggedIn) return toast.error("Please login to generate thumbnails");
+    if (!title.trim()) return toast.error("Title is required");
 
-  }
+    setLoading(true);
+
+    const api_payload = {
+      title,
+      prompt: additionalDetails,
+      style,
+      aspect_ratio: aspectRatio,
+      color_scheme: colorScheme, 
+      text_overlay: true,
+    };
+
+    const { data } = await api.post("/api/thumbnail/generate", api_payload);
+
+    if (data.thumbnail) {
+      navigate("/generate/" + data.thumbnail._id);
+      toast.success(data.message);
+    }
+  };
 
   const fetchThumbnail = async () => {
-    setLoading(true)
-    if(id){
-      const thumbnail : any = dummyThumbnails.find((thumbnail)=> thumbnail._id === id);
-      setThumbnail(thumbnail)
-      setAdditionalDetails(thumbnail.user_prompt)
-      setTitle(thumbnail.title)
-      setColorSchemeId(thumbnail.colorScheme)
-      setAspectRatio(thumbnail.aspect_ratio)
-      setStyle(thumbnail.style)
-      setLoading(false)
+    try {
+      const { data } = await api.get(`/api/user/thumbnail/${id}`);
+      setThumbnail(data?.thumbnail as IThumbnail);
+      setLoading(!data?.thumbnail?.image_url);
+      setAdditionalDetails(data.thumbnail?.user_prompt);
+      setTitle(data?.thumbnail?.title);
+      setColorSchemeId(data?.thumbnail?.color_scheme);
+      setAspectRatio(data?.thumbnail?.aspect_ratio);
+      setStyle(data?.thumbnail?.style);
+    } catch (error: any) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || error.message); 
     }
-  }
+  };
 
-  useEffect(()=>{
-    if(id){
-      fetchThumbnail()
+  useEffect(() => {
+    if (isLoggedIn && id) {
+      fetchThumbnail();
     }
-  }, [id])
+    if (id && loading && isLoggedIn) {
+      const interval = setInterval(() => {
+        fetchThumbnail();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [id, loading, isLoggedIn]);
 
-
+  useEffect(() => {
+    if (!id && thumbnail) {
+      setThumbnail(null);
+    }
+  }, [pathname]);
 
   return (
     <>
@@ -75,7 +111,6 @@ const Generate = () => {
                 </div>
 
                 <div className="space-y-5">
-                  {/* TITLE INPUT */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium">
                       Title or Topic
@@ -95,13 +130,11 @@ const Generate = () => {
                     </div>
                   </div>
 
-                  {/* Aspect Ratio */}
                   <AspectRatioSelector
                     value={aspectRatio}
                     onChange={setAspectRatio}
                   />
 
-                  {/* Style Selector */}
                   <StyleSelector
                     value={style}
                     onChange={setStyle}
@@ -109,19 +142,15 @@ const Generate = () => {
                     setIsOpen={setStyleDropdownOpen}
                   />
 
-                  {/* Color Scheme Selector */}
                   <ColorSchemeSelector
                     value={colorScheme}
                     onChange={setColorSchemeId}
                   />
 
-                  {/* DETAILS */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium">
                       Additional Prompts{" "}
-                      <span className="text-zinc-400 text-xs">
-                        (optional)
-                      </span>
+                      <span className="text-zinc-400 text-xs">(optional)</span>
                     </label>
                     <textarea
                       value={additionalDetails}
@@ -135,9 +164,11 @@ const Generate = () => {
                   </div>
                 </div>
 
-                {/* BUTTON */}
                 {!id && (
-                  <button onClick={handleGenerate} className="text-[15px] w-full py-3.5 rounded-xl font-medium bg-gradient-to-b from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 transition-colors disabled:cursor-not-allowed">
+                  <button
+                    onClick={handleGenerate}
+                    className="text-[15px] w-full py-3.5 rounded-xl font-medium bg-gradient-to-b from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 transition-colors disabled:cursor-not-allowed"
+                  >
                     {loading ? "Generating..." : "Generate Thumbnail"}
                   </button>
                 )}
@@ -147,8 +178,14 @@ const Generate = () => {
             {/* RIGHT PANEL */}
             <div>
               <div className="p-6 rounded-2xl bg-white/8 border border-white/10 shadow-xl">
-                <h2 className="text-lg font-semibold text-zinc-100 mb-4">Preview</h2>
-                <PreviewPanel thumbnail={thumbnail} isLoading={loading} aspectRatio={aspectRatio}/>
+                <h2 className="text-lg font-semibold text-zinc-100 mb-4">
+                  Preview
+                </h2>
+                <PreviewPanel
+                  thumbnail={thumbnail}
+                  isLoading={loading}
+                  aspectRatio={aspectRatio}
+                />
               </div>
             </div>
           </div>
